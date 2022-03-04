@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    build:
+      context: ./elasticsearch
+      dockerfile: elastic.Dockerfile
+    container_name: elasticsearch
+#    Dockerfile에서 정의하고 있으므로 주석
+#    image: elasticsearch:8.0.0
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - elk
+    volumes:
+#      bind -> bind mount는 Data가 Host System의 어디에든지 저장될 수 있습니다.
+#      Docker Host 또는 Docker Container의 Non-Docker 프로세서들이 언제든지 저장된 Data를 수정할 수 있습니다.
+      - /Users/healthport/docker/data:/usr/share/elasticsearch/data
+      - type: bind
+        source: ./elasticsearch/elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+        read_only: true
+#      volume -> Docker(Linux에서는 /var/lib/docker/volume/)가 관리하는 Host File System의 일부에 Data가 저장됩니다.
+#      Docker에서 Data를 존속시킬 수 있는 Best한 방법
+      - type: bind
+        source: example
+        target: /usr/share/elasticsearch/example
+    environment:
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+      - "xpack.security.enabled=false"
+#    user: root
+#    restart: always
+#    privileged: true
+  
+  kibana:
+    build:
+      context: ./kibana
+      dockerfile: kibana.Dockerfile
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    networks:
+      - elk
+    
+#엘라스틱서치 컨테이너가 구동되었는지 확인하고 실행하기 위한 설정
+    depends_on:
+      - elasticsearch
+    
+
+#네트워크 생성
+networks:
+  elk:
+    driver: bridge
+
+#볼륨생성
+volumes:
+  example:

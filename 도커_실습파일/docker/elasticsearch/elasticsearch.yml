@@ -1,0 +1,6 @@
+cluster.name: "javacafe-cluster"
+node.name: "javacafe-node1"
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+path.repo: ["/usr/share/elasticsearch/example/search_example","/usr/share/elasticsearch/example/agg_example"]
